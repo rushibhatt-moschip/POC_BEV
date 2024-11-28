@@ -66,7 +66,9 @@ Mat blendImages(const Mat& img1, const Mat& img2, const Mat& img3, int off_x1, i
 	
 	Mat roi3 = canvas3(Rect(off_x3, off_y3, w3, h3));
 	img3.copyTo(roi3);
-
+	imwrite("f1.jpg",canvas1);
+	imwrite("f2.jpg",canvas2);
+	imwrite("f3.jpg",canvas3);
 	//cout << "all 3 canvas" << endl;
 	add(canvas1,canvas2,canvas2);
 	add(canvas2,canvas3,canvas4);
@@ -98,9 +100,9 @@ Mat blendImages(const Mat& img1, const Mat& img2, const Mat& img3, int off_x1, i
 
 int main(int argc, char **argv) {
 	
-	FileStorage file("new_coordinates.yml", FileStorage::WRITE);
+	FileStorage fs("new_coordinates.yml", FileStorage::READ);
 
-	if (!file.isOpened()) {
+	if (!fs.isOpened()) {
 		cerr << "Error: Could not open the file for writing!" << endl;
 		return -1;
 	}
@@ -144,14 +146,17 @@ int main(int argc, char **argv) {
 	int x3 = 487;
 	int y3 = 149;
 
-/*	fs["img_1_angle"] >> a1;
+	fs["img_1_angle"] >> a1;
 	fs["img_2_angle"] >> a2;
+	fs["img_3_angle"] >> a3;
 
 	fs["img_1_x"] >> x1;
 	fs["img_1_y"] >> y1;
 	fs["img_2_x"] >> x2;
 	fs["img_2_y"] >> y2;
-*/	cout << "after reading var" << endl;	
+	fs["img_3_x"] >> x3;
+	fs["img_3_y"] >> y3;
+	//cout << "after reading var" << endl;	
 	
 	while(1){
 		char key = (char)waitKey(1);
@@ -224,7 +229,7 @@ int main(int argc, char **argv) {
 		imshow("canvas.jpg",blendedCanvas);
 	}
 	
-	//img1 coor
+/*	//img1 coor
 	file << "img_1_x" << x1 << "img_1_y" << y1;
 	file << "img_1_width" << re1.cols << "img_1_height" << re1.rows;
 	file << "img_1_angle" << a1;
@@ -244,10 +249,10 @@ int main(int argc, char **argv) {
 	
 	//rotation center
 	file << "center_of_rotation_img2" << center;
-	
+*/	
 
-	file.release();
-	imwrite("img.jpg", blendedCanvas);
+	fs.release();
+	imwrite("icimg.jpg", blendedCanvas);
 
 	return 0;
 }
