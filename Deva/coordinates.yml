@@ -1,0 +1,15 @@
+%YAML:1.0
+---
+img_1_x: 328
+img_1_y: 156
+img_1_width: 300
+img_1_height: 300
+img_1_angle: 0
+img_2_x: 457
+img_2_y: 126
+img_2_width: 300
+img_2_height: 300
+img_2_angle: -21
+canvas_width: 1920
+canvas_height: 1080
+center_of_rotation_img2: [ 173., 477. ]
