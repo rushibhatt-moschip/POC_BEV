@@ -28,8 +28,8 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 	int h2 = img2.rows;
 
 	// Calculate the canvas size to hold both images, considering the offsets
-	int c1 = 1920;  
-	int c2 = 1080;  
+	int c1 = 1280;  
+	int c2 = 720;  
 
 	// Create an empty canvas with black background
 	Mat canvas1(Size(c1, c2), img1.type(), Scalar(0, 0, 0));
@@ -65,23 +65,51 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 	cv::Mat gradient1(roi1.size(), CV_32F); // Using 32-bit float for better precision
 
 	/* 1 --- 0 */ 
-	for (int y = 0; y < roi.rows; y++) {
+	/*for (int y = 0; y < roi.rows; y++) {
 		for (int x = 0; x < roi.cols; x++) {
 			// Linearly decrease intensity from 1 (max) to 0 (min) across the width
 			float intensity = 1.0f - (float(x) / float(roi.cols));
 			gradient.at<float>(y, x) = intensity;  // Set the gradient intensity
 		}
-	}
+	}*/
 
 	/* 0 --- 1 */
-	for (int y = 0; y < roi1.rows; y++) {
+	/*for (int y = 0; y < roi1.rows; y++) {
 		for (int x = 0; x < roi1.cols; x++) {
 			// Linearly increase intensity from 0 (min) to 1 (max) across the width
 			float intensity =  float(x) / float(roi1.cols) ;  // This creates an increasing intensity
 			gradient1.at<float>(y, x) = intensity;  // Set the gradient intensity
 		}
+	}*/
+	/* 1 --- 0 */ 
+	for (int y = 0; y < roi.rows; y++) {
+		for (int x = 0; x < roi.cols; x++) {
+			// Linearly decrease intensity from 1 (max) to 0 (min) across the width
+			//float intensity = 1.0f - (float(x) / float(roi_gray3.cols));
+			//gradient3.at<float>(y, x) = intensity;  // Set the gradient intensity
+
+			if (y >= absolute_slope * x) {
+				gradient.at<float>(y, x) = 0.0f;  // After the diagonal (below), set mask value to 1
+			} else {
+				gradient.at<float>(y, x) = 1.0f;  // Before the diagonal (above), set mask value to 0
+			}
+		}
 	}
 
+	/* 0 --- 1 */ 
+	for (int y = 0; y < roi1.rows; y++) {
+		for (int x = 0; x < roi1.cols; x++) {
+			// Linearly decrease intensity from 1 (max) to 0 (min) across the width
+			//float intensity = 1.0f - (float(x) / float(roi_gray3.cols));
+			//gradient3.at<float>(y, x) = intensity;  // Set the gradient intensity
+
+			if (y >= absolute_slope * x) {
+				gradient1.at<float>(y, x) = 0.0f;  // After the diagonal (below), set mask value to 1
+			} else {
+				gradient1.at<float>(y, x) = 1.0f;  // Before the diagonal (above), set mask value to 0
+			}
+		}
+	}
 /*	roi_gray.convertTo(roi_gray, CV_32F);  // Convert to float for multiplication
 	multiply(roi_gray, gradient, roi_gray);
 	roi_gray.convertTo(roi_gray, CV_8U);
