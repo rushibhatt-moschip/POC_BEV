@@ -81,6 +81,9 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 			gradient1.at<float>(y, x) = intensity;  // Set the gradient intensity
 		}
 	}*/
+
+	float slope = -0.1772f;
+        float absolute_slope = std::abs(slope);
 	/* 1 --- 0 */ 
 	for (int y = 0; y < roi.rows; y++) {
 		for (int x = 0; x < roi.cols; x++) {
