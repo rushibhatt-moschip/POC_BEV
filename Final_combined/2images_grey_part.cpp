@@ -54,52 +54,83 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 	cv::Mat roi1 = canvas2(cv::Rect(x_start, y_start, width, height));
 
 	// Convert the ROI to grayscale to get the luminance values
-	cv::Mat roi_gray;
-	cv::Mat roi_gray1;
+	//cv::Mat roi_gray;
+	//cv::Mat roi_gray1;
 
-	cv::cvtColor(roi, roi_gray, cv::COLOR_BGR2GRAY);
-	cv::cvtColor(roi1, roi_gray1, cv::COLOR_BGR2GRAY);
+	//cv::cvtColor(roi, roi_gray, cv::COLOR_BGR2GRAY);
+	//cv::cvtColor(roi1, roi_gray1, cv::COLOR_BGR2GRAY);
 
 
-	cv::Mat gradient(roi_gray.size(), CV_32F); // Using 32-bit float for better precision
-	cv::Mat gradient1(roi_gray1.size(), CV_32F); // Using 32-bit float for better precision
+	cv::Mat gradient(roi.size(), CV_32F); // Using 32-bit float for better precision
+	cv::Mat gradient1(roi1.size(), CV_32F); // Using 32-bit float for better precision
 
 	/* 1 --- 0 */ 
-	for (int y = 0; y < roi_gray.rows; y++) {
-		for (int x = 0; x < roi_gray.cols; x++) {
+	for (int y = 0; y < roi.rows; y++) {
+		for (int x = 0; x < roi.cols; x++) {
 			// Linearly decrease intensity from 1 (max) to 0 (min) across the width
-			float intensity = 1.0f - (float(x) / float(roi_gray.cols));
+			float intensity = 1.0f - (float(x) / float(roi.cols));
 			gradient.at<float>(y, x) = intensity;  // Set the gradient intensity
 		}
 	}
 
 	/* 0 --- 1 */
-	for (int y = 0; y < roi_gray1.rows; y++) {
-		for (int x = 0; x < roi_gray1.cols; x++) {
+	for (int y = 0; y < roi1.rows; y++) {
+		for (int x = 0; x < roi1.cols; x++) {
 			// Linearly increase intensity from 0 (min) to 1 (max) across the width
-			float intensity =  float(x) / float(roi_gray1.cols) ;  // This creates an increasing intensity
+			float intensity =  float(x) / float(roi1.cols) ;  // This creates an increasing intensity
 			gradient1.at<float>(y, x) = intensity;  // Set the gradient intensity
 		}
 	}
 
-	roi_gray.convertTo(roi_gray, CV_32F);  // Convert to float for multiplication
+/*	roi_gray.convertTo(roi_gray, CV_32F);  // Convert to float for multiplication
 	multiply(roi_gray, gradient, roi_gray);
 	roi_gray.convertTo(roi_gray, CV_8U);
 
 	roi_gray1.convertTo(roi_gray1, CV_32F);  // Convert to float for multiplication
 	multiply(roi_gray1, gradient1, roi_gray1);
 	roi_gray1.convertTo(roi_gray1, CV_8U);
+*/
+
+	for (int y = 0; y < roi.rows; y++) {
+		for (int x = 0; x < roi.cols; x++) {
+			// Extract BGR values of the pixel
+			Vec3b pixel = roi.at<Vec3b>(y, x);  // Access BGR channels of the pixel
+
+			// Apply the gradient to each channel (B, G, R)
+			pixel[0] = cv::saturate_cast<uchar>(pixel[0] * gradient.at<float>(y, x)); // Blue channel
+			pixel[1] = cv::saturate_cast<uchar>(pixel[1] * gradient.at<float>(y, x)); // Green channel
+			pixel[2] = cv::saturate_cast<uchar>(pixel[2] * gradient.at<float>(y, x)); // Red channel
+
+			// Set the modified pixel back to the ROI
+			roi.at<Vec3b>(y, x) = pixel;
+		}
+	}
+
+	for (int y = 0; y < roi1.rows; y++) {
+		for (int x = 0; x < roi1.cols; x++) {
+			// Extract BGR values of the pixel
+			Vec3b pixel = roi1.at<Vec3b>(y, x);  // Access BGR channels of the pixel
+
+			// Apply the gradient to each channel (B, G, R)
+			pixel[0] = cv::saturate_cast<uchar>(pixel[0] * gradient1.at<float>(y, x)); // Blue channel
+			pixel[1] = cv::saturate_cast<uchar>(pixel[1] * gradient1.at<float>(y, x)); // Green channel
+			pixel[2] = cv::saturate_cast<uchar>(pixel[2] * gradient1.at<float>(y, x)); // Red channel
+
+			// Set the modified pixel back to the ROI
+			roi1.at<Vec3b>(y, x) = pixel;
+		}
+	}
 
 	// Convert the modified grayscale image back to a 3-channel BGR image
-	cv::Mat roi_bgr;
-	cv::Mat roi_bgr1;
+	//cv::Mat roi_bgr;
+	//cv::Mat roi_bgr1;
 
-	cv::cvtColor(roi_gray, roi_bgr, cv::COLOR_GRAY2BGR);
-	cv::cvtColor(roi_gray1, roi_bgr1, cv::COLOR_GRAY2BGR);
+	//cv::cvtColor(roi_gray, roi_bgr, cv::COLOR_GRAY2BGR);
+	//cv::cvtColor(roi_gray1, roi_bgr1, cv::COLOR_GRAY2BGR);
 
 	// Now replace the ROI in the original image with the modified ROI
-	roi_bgr.copyTo(roi);
-	roi_bgr1.copyTo(roi1);
+	roi.copyTo(roi);
+	roi.copyTo(roi1);
 
 	cv::add(canvas1,canvas2,canvas4);
 	return canvas4;
