@@ -20,6 +20,7 @@ Mat resizeImage(const Mat& src, Size newSize) {
 	return dst;
 }
 
+
 Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int off_x2, int off_y2) {
 
 	int w1 = img1.cols;
@@ -44,36 +45,83 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 	Mat roi4 = canvas2(Rect(off_x2, off_y2, w2, h2));
 	img2.copyTo(roi4);
 
-	int x_start = 409;  // x-coordinate of the top-left corner of the rectangle
-	int y_start = 288;  // y-coordinate of the top-left corner
-	int width   = 83;    // Width of the region
-	int height  = 220;   // Height of the region
+	int x_start = 540;  // x-coordinate of the top-left corner of the rectangle
+	int y_start = 155;  // y-coordinate of the top-left corner
+	int width   = 90;    // Width of the region
+	int height  = 271;   // Height of the region
 
 	// Extract the region of interest (ROI) from the original image
 	cv::Mat roi = canvas1(cv::Rect(x_start, y_start, width, height));
 	cv::Mat roi1 = canvas2(cv::Rect(x_start, y_start, width, height));
+
+	// Convert the ROI to grayscale to get the luminance values
+	//cv::Mat roi_gray;
+	//cv::Mat roi_gray1;
+
+	//cv::cvtColor(roi, roi_gray, cv::COLOR_BGR2GRAY);
+	//cv::cvtColor(roi1, roi_gray1, cv::COLOR_BGR2GRAY);
 
 
 	cv::Mat gradient(roi.size(), CV_32F); // Using 32-bit float for better precision
 	cv::Mat gradient1(roi1.size(), CV_32F); // Using 32-bit float for better precision
 
 	/* 1 --- 0 */ 
-	for (int y = 0; y < roi.rows; y++) {
+	/*for (int y = 0; y < roi.rows; y++) {
 		for (int x = 0; x < roi.cols; x++) {
 			// Linearly decrease intensity from 1 (max) to 0 (min) across the width
 			float intensity = 1.0f - (float(x) / float(roi.cols));
 			gradient.at<float>(y, x) = intensity;  // Set the gradient intensity
 		}
-	}
+	}*/
 
 	/* 0 --- 1 */
-	for (int y = 0; y < roi1.rows; y++) {
+	/*for (int y = 0; y < roi1.rows; y++) {
 		for (int x = 0; x < roi1.cols; x++) {
 			// Linearly increase intensity from 0 (min) to 1 (max) across the width
 			float intensity =  float(x) / float(roi1.cols) ;  // This creates an increasing intensity
 			gradient1.at<float>(y, x) = intensity;  // Set the gradient intensity
 		}
+	}*/
+
+	float slope = -0.1772f;
+        float absolute_slope = std::abs(slope);
+	/* 1 --- 0 */ 
+	for (int y = 0; y < roi.rows; y++) {
+		for (int x = 0; x < roi.cols; x++) {
+			// Linearly decrease intensity from 1 (max) to 0 (min) across the width
+			//float intensity = 1.0f - (float(x) / float(roi_gray3.cols));
+			//gradient3.at<float>(y, x) = intensity;  // Set the gradient intensity
+
+			if (y >= absolute_slope * x) {
+				gradient.at<float>(y, x) = 0.0f;  // After the diagonal (below), set mask value to 1
+			} else {
+				gradient.at<float>(y, x) = 1.0f;  // Before the diagonal (above), set mask value to 0
+			}
+		}
 	}
+
+	/* 0 --- 1 */ 
+	for (int y = 0; y < roi1.rows; y++) {
+		for (int x = 0; x < roi1.cols; x++) {
+			// Linearly decrease intensity from 1 (max) to 0 (min) across the width
+			//float intensity = 1.0f - (float(x) / float(roi_gray3.cols));
+			//gradient3.at<float>(y, x) = intensity;  // Set the gradient intensity
+
+			if (y >= absolute_slope * x) {
+				gradient1.at<float>(y, x) = 0.0f;  // After the diagonal (below), set mask value to 1
+			} else {
+				gradient1.at<float>(y, x) = 1.0f;  // Before the diagonal (above), set mask value to 0
+			}
+		}
+	}
+/*	roi_gray.convertTo(roi_gray, CV_32F);  // Convert to float for multiplication
+	multiply(roi_gray, gradient, roi_gray);
+	roi_gray.convertTo(roi_gray, CV_8U);
+
+	roi_gray1.convertTo(roi_gray1, CV_32F);  // Convert to float for multiplication
+	multiply(roi_gray1, gradient1, roi_gray1);
+	roi_gray1.convertTo(roi_gray1, CV_8U);
+*/
 
 	for (int y = 0; y < roi.rows; y++) {
 		for (int x = 0; x < roi.cols; x++) {
@@ -105,6 +153,13 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 		}
 	}
 
+	// Convert the modified grayscale image back to a 3-channel BGR image
+	//cv::Mat roi_bgr;
+	//cv::Mat roi_bgr1;
+
+	//cv::cvtColor(roi_gray, roi_bgr, cv::COLOR_GRAY2BGR);
+	//cv::cvtColor(roi_gray1, roi_bgr1, cv::COLOR_GRAY2BGR);
+
 	// Now replace the ROI in the original image with the modified ROI
 	roi.copyTo(roi);
 	roi.copyTo(roi1);
@@ -112,6 +167,8 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 	cv::add(canvas1,canvas2,canvas4);
 	return canvas4;
 }
+
+
 
 int main(int argc, char **argv) {
 	
