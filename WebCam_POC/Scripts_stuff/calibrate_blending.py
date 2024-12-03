@@ -41,13 +41,13 @@ while True:
     
     if key == ord ('q') or key == ord('w') or key == ord('e') or key == ord('r'):
         if key == ord('q') and points[circle_selected, 0] > 0:
-            points[circle_selected, 0] -= 1
+            points[circle_selected, 0] -= 5
         elif key == ord('w') and points[circle_selected, 1] > 0:
-            points[circle_selected, 1] -= 1
+            points[circle_selected, 1] -= 5
         elif key == ord('e') and points[circle_selected, 1] < HEIGHT:
-            points[circle_selected, 1] += 1
+            points[circle_selected, 1] += 5
         elif key == ord('r') and points[circle_selected, 0] < WIDTH:
-            points[circle_selected, 0] += 1
+            points[circle_selected, 0] += 5
     
     if key == ord('c') or key == ord('x'):
         if key == ord('c'):
@@ -66,6 +66,9 @@ while True:
     x_min = np.min(points[:2, 0])
     x_max = np.max(points[2:, 0])
 
+   # print(x_max)
+   # print(x_min)
+   # print("new")
     # generating the blended area 
 
     blended_area = np.linspace(0,1, x_max - x_min)
@@ -82,18 +85,32 @@ while True:
         b32 = points[3, 1] - m32 * points[3,0]
 
         m01 = (points[1, 1] - points[0, 1]) / (points[1, 0] - points[0, 0])
-        b01 = points[1, 1] - m32 * points[1,0]
+        #b01 = points[1, 1] - m32 * points[1,0]
+        b01 = points[1, 1] - m01 * points[1,0]
+        
+        #m01=abs(m01)
+        #b01=abs(b01)
+        #print(m01)
+        #print(b01)
+
 
         for y in range(blended_canvas.shape[0]):
             for x in range(blended_canvas.shape[1]):
-                if y > m32 * x + b32:
+                if y < m32 * x + b32:
                     blended_canvas[y, x, :] = [1, 1, 1]
-                if y < m01 * x + b01:
+                if y > m01 * x + b01:
                     blended_canvas[y, x, :] = [1, 1, 1]
-                
-        clean = False
+                #if y > m01 * x + b01:
+                #    blended_canvas[y, x, :] = [1, 1, 1]
+       
 
 
+                #else if y > m01 * x + b01: 
+                #    blended_canvas[y, x, :] = [0, 0, 0]
+                #else if y < m01 * x + b01:
+                #    blended_canvas[y, x, :] = [1, 1, 1]
+        print("i am stuck");
+        
     canvas = cv2.multiply (canvas.astype(np.float32), blended_canvas).astype(np.uint8)
 
     # drawing the lines 
@@ -108,7 +125,13 @@ while True:
             cv2.circle (canvas, points[i], 5, (0, 255, 0), 2)
     ######################################################################################
     # display the canvas
+
     cv2.imshow("canvas", canvas)
+    cv2.resizeWindow("canvas", 800, 400)  # Example: resize to 800x600
+    if clean:
+        if (cv2.waitKey(0) == 103): # press g
+                clean = False
+
 
 cv2.destroyAllWindows()
 
