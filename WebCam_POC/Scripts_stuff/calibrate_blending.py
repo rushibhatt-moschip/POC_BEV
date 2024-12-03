@@ -2,6 +2,13 @@
 Calibrate the blending onto an image. 
     script format : arg_1 = image_path 
 
+
+    CONTROLS: 
+        Quit                    : Esc
+        translation             : 'q' : left | 'w' : up | 'e' : down | 'r' : right 
+        change point            : space 
+        clean blending          : 'c'
+        get out of clean blend  : 'x'
 '''
 
 
