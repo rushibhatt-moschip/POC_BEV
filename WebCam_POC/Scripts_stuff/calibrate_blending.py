@@ -32,6 +32,7 @@ points = np.array([[ 10, 10], [10, HEIGHT - 10],
 
 circle_selected = 0
 clean  = False 
+flip=0
 while True:
     canvas = img.copy()
 
@@ -40,6 +41,7 @@ while True:
     
     ########################## keys and command define part #################################
     #press (x) after pressing c to reset the canvas
+    #press (f) to flip the mask from 1->0 or vice versa
     if key == 27:
         break
 
@@ -59,6 +61,10 @@ while True:
     if key == ord('c'):
         clean = True
     
+    if key == ord('f'):
+        flip += 1
+    
+
 
 
     #########################################################################################
@@ -71,8 +77,10 @@ while True:
     x_max = np.max(points[2:, 0])
 
     # generating the blended area 
-
-    blended_area = np.linspace(0,1, x_max - x_min)
+    if (flip%2):
+        blended_area = np.linspace(1,0, x_max - x_min)
+    else:
+        blended_area = np.linspace(0,1, x_max - x_min)
     blended_area = np.tile( blended_area, (3, HEIGHT, 1) )
     blended_area = np.moveaxis(blended_area, 0, -1)
 
