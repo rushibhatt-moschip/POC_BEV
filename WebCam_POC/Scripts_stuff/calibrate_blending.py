@@ -116,6 +116,11 @@ while True:
         m01 = (points[1, 1] - points[0, 1]) / (points[1, 0] - points[0, 0])
         b01 = points[1, 1] - m01 * points[1,0]
 
+#Line 1 up
+        m02 = (points[2, 1] - points[0, 1]) / (points[2, 0] - points[0, 0])
+        b02 = points[2, 1] - m02 * points[2,0]
+ 
+
 #Line 3
         m45 = (points[5, 1] - points[4, 1]) / (points[5, 0] - points[4, 0])
         b45 = points[5, 1] - m45 * points[5,0]
@@ -123,20 +128,32 @@ while True:
         m67 = (points[7, 1] - points[6, 1]) / (points[7, 0] - points[6, 0])
         b67 = points[7, 1] - m67 * points[7,0]
 
+#Line 3 up
+
+        m46 = (points[6, 1] - points[4, 1]) / (points[6, 0] - points[4, 0])
+        b46 = points[6, 1] - m46 * points[6,0]
+
         for y in range(blended_canvas.shape[0]):
             for x in range(blended_canvas.shape[1]):
-                
+       
+#line 1 UP
+                if y < m02 * x + b02 and x > points[0,0]-1 and x<points[2,0]+1: 
+                    blended_canvas[y, x, :] = [1, 1, 1]
+
+#line 3 UP
+                if y < m46 * x + b46 and x > points[4,0]-1 and x<points[6,0]+1: 
+                    blended_canvas[y, x, :] = [1, 1, 1]
+
+#line 1        
                 if y > m01 * x + b01 and x>(x_min-1):
                     blended_canvas[y, x, :] = [1, 1, 1]
-
+#line 2
                 if y < m32 * x + b32 and x<x_max+1:
                     blended_canvas[y, x, :] = [1, 1, 1]
-
-
-
+#line 3 
                 if y > m45 * x + b45 and x>x_min_new-1:
                     blended_canvas[y, x, :] = [1, 1, 1]
-            
+#line 4      
                 if y > m67 * x + b67 and x<x_max_new+1:
                     blended_canvas[y, x, :] = [1, 1, 1]
             
