@@ -72,30 +72,39 @@ Mat blendImages(const Mat& img1, const Mat& img2, const Mat& img3, int off_x1, i
 
 int main(int argc, char **argv) {
 
-	if(argc < 8){
+	/*if(argc < 8){
 		cout << "Usage: ./main <img-1> <img-1-trans-mat> <img-2> <img-2-trans-mat> <img-3> <img-3-trans-mat> <coordinates.yml>" << endl;
 		return -1;
-	}
+	}*/
+
+	VideoCapture cap1(2, cv::CAP_V4L2);
+	VideoCapture cap2(5, cv::CAP_V4L2);
+	VideoCapture cap3(0, cv::CAP_V4L2);
 	
-	FileStorage fs(argv[7], FileStorage::READ);
+	if (!cap1.isOpened() || !cap2.isOpened() || !cap3.isOpened()) {
+		std::cout << "unable to open webcam" << std::endl;
+	}
+
+	// setting resolution | resizing. 
+	cap1.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+	cap1.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+
+	cap2.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+	cap2.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+	
+	cap3.set(cv::CAP_PROP_FRAME_WIDTH, 640);
+	cap3.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+
+	FileStorage fs("master.yml", FileStorage::READ);
 
 	if (!fs.isOpened()) {
 		cerr << "Error: Could not open the file for writing!" << endl;
 		return -1;
 	}
 
-	Mat nimg1 = imread(argv[1]);
-	Mat nimg2 = imread(argv[3]);
-	Mat nimg3 = imread(argv[5]);
-	//imshow("raw",nimg3);		
-	if (nimg1.empty() || nimg2.empty() || nimg3.empty()) {
-		cerr << "Error: Could not open one or more images!" << endl;
-		return -1;
-	}
-
-	FileStorage transform_1(argv[2], FileStorage::READ);
-	FileStorage transform_2(argv[4], FileStorage::READ);
-	FileStorage transform_3(argv[6], FileStorage::READ);
+	FileStorage transform_1("c1-mat.yml", FileStorage::READ);
+	FileStorage transform_2("c2-mat.yml", FileStorage::READ);
+	FileStorage transform_3("c3-mat.yml", FileStorage::READ);
 
 	if (!transform_1.isOpened() || !transform_2.isOpened() || !transform_3.isOpened()){
 		cerr << "Error: Could not open the file for writing!" << endl;
@@ -107,20 +116,11 @@ int main(int argc, char **argv) {
 	transform_2["mat"] >> t_2;
 	transform_3["mat"] >> t_3;
 	
-	Mat img1;  
-	warpPerspective(nimg1, img1, t_1, Size(640,480));
-	Mat img2;
-      	warpPerspective(nimg2, img2, t_2, Size(640,480));
-	Mat img3; 
-	warpPerspective(nimg3, img3, t_3, Size(640,480));
-
-//	imshow("one", img1);
-//	imshow("1one", img2);
-//	imshow("2one", img3);
+	Mat img1, img2, img3;   
 	Mat rotated1,rotated2,rotated3;
 	Mat re1, re2, re3;
 	Mat output;
-	
+
 	/* Variables to store angle of rotation */
 	double a1 = 0;
 	double a2 = 0;
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 	double s1 = 0;
 	double s2 = 0;
 	double s3 = 0;	
-	
+
 	/* Translation coordinates of three images */
 	int x1 = 0;
 	int y1 = 0;
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 
 	cout << "Width " << canvas_width << endl;
 	cout << "Height " << canvas_height << endl;
-	
+
 	/* Rotation angle */
 	fs["img0_rotate_angle"] >> a1;
 	fs["img1_rotate_angle"] >> a2;
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
 	fs["img0_scale"] >> s1;
 	fs["img1_scale"] >> s2;
 	fs["img2_scale"] >> s3;
-		
+
 	cout << "s1 " << s1 << endl;	
 	cout << "s2 " << s2 << endl;	
 	cout << "s3 " << s3 << endl;	
@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
 	y3 = offset3.at<int>(1);
 
 	cout << "img 3: x " << x3 << " y " << y3 << endl; 
-	
+
 	/* Center of rotation */
 	Mat center_r_1, center_r_2, center_r_3;
 	fs["img0_rotate_center"] >> center_r_1;
@@ -190,22 +190,69 @@ int main(int argc, char **argv) {
 	int t2 = center_r_2.at<int>(1);
 	cout << t1 << endl;
 	cout << t2 << endl;
-	//cout << "Rotation coordinates : Img 1 " << center_r_1 << endl;
-	//cout << "Rotation angle : Img 2 " << center_r_2 << endl;
-	//cout << "Rotation angle : Img 3 " << center_r_3 << endl;
 
-	rotated1 = rotateImage(img1, a1, s1, center_r_1); 
-	rotated2 = rotateImage(img2, a2, s2, center_r_2); 
-	rotated3 = rotateImage(img3, a3, s3, center_r_3); 
-	
-	//imshow("one", rotated1);
-	//imshow("two", rotated2);
-	//imshow("three", rotated3);
+	Mat nimg1, nimg2, nimg3;
 
-	output = blendImages(rotated1, rotated2, rotated3, x1, y1, x2, y2, x3, y3, canvas_width, canvas_height);
-	
-	//imshow("canvas.jpg", output);
-	waitKey(0);
+	while(1){
+		char key = (char)waitKey(1);
+
+                if (key == 27) {
+                        break;
+                }
+
+
+		cap1 >> nimg1;
+		cap2 >> nimg2;
+		cap3 >> nimg3;
+
+		//Mat nimg1 = imread(argv[1]);
+		//Mat nimg2 = imread(argv[3]);
+		//Mat nimg3 = imread(argv[5]);
+		//imshow("raw",nimg3);		
+		
+		if (nimg1.empty()) {
+			cerr << "Error: Could not open one or more images! 1" << endl;
+			return -1;
+		}
+
+		if (nimg2.empty()) {
+			cerr << "Error: Could not open one or more images! 2" << endl;
+			return -1;
+		
+		}
+
+		if (nimg3.empty()) {
+			cerr << "Error: Could not open one or more images! 3" << endl;
+			return -1;
+		}
+
+		warpPerspective(nimg1, img1, t_1, Size(640,480));
+		warpPerspective(nimg2, img2, t_2, Size(640,480));
+		warpPerspective(nimg3, img3, t_3, Size(640,480));
+
+		//	imshow("one", img1);
+		//	imshow("1one", img2);
+		//	imshow("2one", img3);
+
+		//cout << "Rotation coordinates : Img 1 " << center_r_1 << endl;
+		//cout << "Rotation angle : Img 2 " << center_r_2 << endl;
+		//cout << "Rotation angle : Img 3 " << center_r_3 << endl;
+
+		rotated1 = rotateImage(img1, a1, s1, center_r_1); 
+		rotated2 = rotateImage(img2, a2, s2, center_r_2); 
+		rotated3 = rotateImage(img3, a3, s3, center_r_3); 
+
+		//imshow("one", rotated1);
+		//imshow("two", rotated2);
+		//imshow("three", rotated3);
+
+		output = blendImages(rotated1, rotated2, rotated3, x1, y1, x2, y2, x3, y3, canvas_width, canvas_height);
+
+		imshow("canvas.jpg", output);
+		//waitKey(1);
+
+	}
+
 	imwrite("output.jpg", output);
 
 	return 0;
