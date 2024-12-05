@@ -9,10 +9,10 @@ using namespace std;
 
 
 Mat rotateImage(const Mat& src, double angle, double scale, Mat center_rotate) {
-	cout << "enter" << endl;
+	//cout << "enter" << endl;
 	int temp1 = center_rotate.at<int>(0);
 	int temp2 = center_rotate.at<int>(1);
-	cout << "center rotate 1 " << center_rotate.at<int>(0) << "2 " << center_rotate.at<int>(0) << endl;
+	//cout << "center rotate 1 " << center_rotate.at<int>(0) << "2 " << center_rotate.at<int>(0) << endl;
 	Point2f center(center_rotate.at<int>(0),center_rotate.at<int>(1));
 	Mat rotMat = getRotationMatrix2D(center, angle, scale);
 
@@ -22,7 +22,8 @@ Mat rotateImage(const Mat& src, double angle, double scale, Mat center_rotate) {
 }
 
 Mat blendImages(const Mat& img1, const Mat& img2, const Mat& img3, int off_x1, int off_y1, int off_x2, int off_y2,
-		int off_x3, int off_y3, int canvas_width, int canvas_height) {
+		int off_x3, int off_y3, int canvas_width, int canvas_height, Mat mask_left, Mat mask_center_0,
+		Mat mask_center_1, Mat mask_right) {
 
 	int w1 = img1.cols;
 	int h1 = img1.rows;
@@ -30,7 +31,7 @@ Mat blendImages(const Mat& img1, const Mat& img2, const Mat& img3, int off_x1, i
 	int h2 = img2.rows;
 	int w3 = img3.cols;
 	int h3 = img3.rows;
-	cout << "width " << w1 << " height "  << h1 << endl;
+	//cout << "width " << w1 << " height "  << h1 << endl;
 	// Calculate the canvas size to hold both images, considering the offsets
 	int c1 = canvas_width;  
 	int c2 = canvas_height;  
@@ -42,11 +43,19 @@ Mat blendImages(const Mat& img1, const Mat& img2, const Mat& img3, int off_x1, i
 	Mat canvas3(Size(c1, c2), img1.type(), Scalar(0, 0, 0));
 
 	Mat canvas4(Size(c1, c2), img1.type(), Scalar(0, 0, 0));
+	
+	Mat canvas1_float,canvas2_float,canvas3_float;
 
 	// Place img1 on the canvas at (off_x1, off_y1)
 	Mat roi1 = img1(Rect(0, 0, w1-off_x1, h1-off_y1));
 	Mat roi4 = canvas1(Rect(off_x1,off_y1, w1-off_x1, h1-off_y1));
 	roi1.copyTo(roi4);
+
+	
+	canvas1.convertTo(canvas1, CV_32F);
+	multiply(canvas1,mask_center_0,canvas1);
+	multiply(canvas1,mask_center_1,canvas1);
+	canvas1.convertTo(canvas1, CV_8U);
 
 	//imshow("one",roi1);
 	//imshow("final",canvas1);
@@ -56,10 +65,18 @@ Mat blendImages(const Mat& img1, const Mat& img2, const Mat& img3, int off_x1, i
 	Mat roi5 = canvas2(Rect(off_x2, off_y2, (w2-off_x2), (h2-off_y2)));
 	roi2.copyTo(roi5);
 
+	canvas2.convertTo(canvas2, CV_32F);
+	multiply(canvas2,mask_left,canvas2);
+	canvas2.convertTo(canvas2, CV_8U);	
+
 	Mat roi3 = img3(Rect(0, 0, (w3-off_x3), (h3-off_y3)));
 	Mat roi6 = canvas3(Rect(off_x3, off_y3, (w3-off_x3), (h3-off_y3)));
 	roi3.copyTo(roi6);
 	
+	canvas3.convertTo(canvas3, CV_32F);
+	multiply(canvas3,mask_right,canvas3);
+	canvas3.convertTo(canvas3, CV_8U);	
+
 	imwrite("f1.jpg",canvas1);
 	imwrite("f2.jpg",canvas2);
 	imwrite("f3.jpg",canvas3);
@@ -105,6 +122,39 @@ int main(int argc, char **argv) {
 	FileStorage transform_1("c1-mat.yml", FileStorage::READ);
 	FileStorage transform_2("c2-mat.yml", FileStorage::READ);
 	FileStorage transform_3("c3-mat.yml", FileStorage::READ);
+	
+	Mat mask_left_0 = imread("c1-view_blendmask_0.jpg");
+	Mat mask_center_0 = imread("c2-view_blendmask_0.jpg");
+	Mat mask_center_1 = imread("c2-view_blendmask_1.jpg");
+	Mat mask_right_0 = imread("c3-view_blendmask_0.jpg");
+	
+	if (mask_left_0.empty()) {
+		std::cerr << "error loading image! left" << std::endl;
+		return -1;
+	}
+
+	if (mask_center_0.empty()) {
+		std::cerr << "error loading image! center 0" << std::endl;
+		return -1;
+	}
+
+	if (mask_center_1.empty()) {
+		std::cerr << "error loading image! center 1" << std::endl;
+		return -1;
+	}
+
+	if (mask_right_0.empty()) {
+		std::cerr << "error loading image! right 0" << std::endl;
+		return -1;
+	}
+
+	// Divide all pixel values by 255 to normalize them to [0, 1]
+	Mat normalized_image_left, normalized_image_center_0, normalized_image_center_1, normalized_image_right;
+	
+	mask_left_0.convertTo(normalized_image_left, CV_32F, 1.0 / 255.0);
+	mask_center_0.convertTo(normalized_image_center_0, CV_32F, 1.0 / 255.0);
+	mask_center_1.convertTo(normalized_image_center_1, CV_32F, 1.0 / 255.0);
+	mask_right_0.convertTo(normalized_image_right, CV_32F, 1.0 / 255.0);
 
 	if (!transform_1.isOpened() || !transform_2.isOpened() || !transform_3.isOpened()){
 		cerr << "Error: Could not open the file for writing!" << endl;
@@ -246,7 +296,8 @@ int main(int argc, char **argv) {
 		//imshow("two", rotated2);
 		//imshow("three", rotated3);
 
-		output = blendImages(rotated1, rotated2, rotated3, x1, y1, x2, y2, x3, y3, canvas_width, canvas_height);
+		output = blendImages(rotated1, rotated2, rotated3, x1, y1, x2, y2, x3, y3, canvas_width, canvas_height,
+				normalized_image_left,normalized_image_center_0,normalized_image_center_1,normalized_image_right);
 
 		imshow("canvas.jpg", output);
 		//waitKey(1);
