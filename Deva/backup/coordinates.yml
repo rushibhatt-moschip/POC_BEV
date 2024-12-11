@@ -1,0 +1,31 @@
+%YAML:1.0
+---
+CANVAS SIZE: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 1280, 720 ]
+img0_rotate_center: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 0, 0 ]
+img0_rotate_angle: 0.
+img0_scale: 1.
+img0offset: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 145, 92 ]
+img1_rotate_center: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 171, 478 ]
+img1_rotate_angle: -37.
+img1_scale: 1.0199999809265137e+00
+img1offset: !!opencv-matrix
+   rows: 2
+   cols: 1
+   dt: i
+   data: [ 404, 27 ]
