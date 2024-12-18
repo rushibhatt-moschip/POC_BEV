@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 	cap2.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 
 	string coordinates_path;
-	coordinates_path = "coordinates/rus.yml";
+	coordinates_path = "coordinates/coordinates.yml";
 	
 	FileStorage fs(coordinates_path, FileStorage::READ);
 
