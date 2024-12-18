@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 	cap2.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
 
 	string coordinates_path;
-	coordinates_path = "/home/devashree/rus.yml";
+	coordinates_path = "coordinates/rus.yml";
 	
 	FileStorage fs(coordinates_path, FileStorage::READ);
 
@@ -126,17 +126,18 @@ int main(int argc, char **argv) {
 	}
 
 	string left_mat, right_mat, right_homo;
-	left_mat   = "/home/devashree/new_send/left_trans.yml";
-	right_mat  = "/home/devashree/new_send/right_trans.yml";
-	right_homo = "/home/devashree/new_send/right_homography.yml";
+	left_mat   = "transform_mtx/left_trans.yml";
+	right_mat  = "transform_mtx/right_trans.yml";
+
+	right_homo = "homography/right_homography.yml";
 
 	FileStorage transform_1(left_mat, FileStorage::READ);
 	FileStorage transform_2(right_mat, FileStorage::READ);
 	FileStorage transform_11(right_homo, FileStorage::READ);
 	
 	string left_mask, right_mask;
-	left_mask  = "/home/devashree/left_blendmask_0.jpg";
-	right_mask = "/home/devashree/transformed_img_blendmask_0.jpg";
+	left_mask  = "masks/left_blendmask_0.jpg";
+	right_mask = "masks/transformed_img_blendmask_0.jpg";
 	
 	Mat mask_left_0 = imread(left_mask);
 	Mat mask_center_0 = imread(right_mask);
@@ -320,7 +321,7 @@ int main(int argc, char **argv) {
 
 	}
 
-	imwrite("2_output.jpg", output);
+	imwrite("output.jpg", output);
 
 	return 0;
 }
