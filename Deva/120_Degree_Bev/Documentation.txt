@@ -1,0 +1,26 @@
+
+
+
+Known issues 
+------------
+
+1. At certain height, there is no seamless transition. object movement distortion
+2. In overlapping region, for gradual slant blending, object at certain height are doubled.
+
+
+Try-outs 
+--------
+
+Camera calibration  - created a dataset with 10x7 checker board.
+		      Images captured at different angle
+		    Result - fetched camera matrix distortion coeff and reprojection error data. 
+			     undistort the video frames using that data. 
+			     Faced alignment issues and frames are distorted at the corners.
+
+
+Stitching - Given input a specific region of intrest from the two images (ie overlaping region)
+		Used orb detector to find the keypoints (edges,line intesections)
+		USed Bf matcher to match the key points from both region of intrest
+		Found homography matrix according to the matching points
+		Warped the two images according to the matrix found
+			
