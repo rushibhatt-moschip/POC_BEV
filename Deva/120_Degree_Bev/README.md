@@ -22,8 +22,8 @@ Steps
 
 Example usecase :
 
-	./temp_script_two 2 0 --transform 1 --tleft transform_mtx/left_trans_0.yml --tright transform_mtx/right_trans_0.yml --coordinates coordinates/try.yml 
+	./main 2 0 --transform 1 --tleft transform_mtx/left_trans_0.yml --tright transform_mtx/right_trans_0.yml --coordinates coordinates/try.yml 
 			      --leftm masks/left_blendmask_0.jpg --rightm masks/transformed_img_blendmask_0.jpg
 
-
+Note : To check the usage run executable withput args.
 Note : left view is central view and right view is referenced and calibrated with respect to left view.
