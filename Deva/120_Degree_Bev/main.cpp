@@ -154,12 +154,12 @@ int main(int argc, char **argv) {
 		std::cout << "unable to open webcam" << std::endl;
 	}
 
-	// setting resolution | resizing. 
-	cap1.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-	cap1.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+	// Capturing frames in 640x480 resolution 
+	cap1.set(CAP_PROP_FRAME_WIDTH, 640);
+	cap1.set(CAP_PROP_FRAME_HEIGHT, 480);
 
-	cap2.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-	cap2.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+	cap2.set(CAP_PROP_FRAME_WIDTH, 640);
+	cap2.set(CAP_PROP_FRAME_HEIGHT, 480);
 	
 
 	FileStorage transform_1(left_mat, FileStorage::READ);
@@ -184,10 +184,20 @@ int main(int argc, char **argv) {
 	}
 
 	/*Divide all pixel values by 255 to normalize them to [0, 1]*/
-	Mat normalized_image_left, normalized_image_center_0, normalized_image_center_1, normalized_image_right;
+	Mat normalized_image_left, normalized_image_center_0;
 	
 	mask_left_0.convertTo(normalized_image_left, CV_32F, 1.0 / 255.0);
 	mask_center_0.convertTo(normalized_image_center_0, CV_32F, 1.0 / 255.0);
+
+	if (normalized_image_left.empty()) {
+		cerr << "error loading image! center 0" << endl;
+		return -1;
+	}
+
+	if (normalized_image_center_0.empty()) {
+		cerr << "error loading image! center 0" << endl;
+		return -1;
+	}
 
 	Mat t_1, t_2,t_3;
 	FileStorage fs(coordinates_path, FileStorage::READ);
@@ -356,6 +366,7 @@ int main(int argc, char **argv) {
 */
 		warpPerspective(nimg1, img1, t_1, Size(640,480));
 		warpPerspective(nimg2, img2, t_2, Size(640,480));
+		
 		if(transform_state == 0){
 			warpPerspective(img2, nnimg1, t_3, Size(640,480));
 			img2 = nnimg1;
@@ -374,7 +385,7 @@ int main(int argc, char **argv) {
 
 	}
 
-	imwrite("output.jpg", output);
+	imwrite("res_imgs/output.jpg", output);
 
 	return 0;
 }

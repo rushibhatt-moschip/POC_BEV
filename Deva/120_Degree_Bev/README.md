@@ -15,10 +15,15 @@ Steps
 3. Rest all paths are provided respect to directory structured followed
 
 4. compile the program
-	g++ temp_script_two.cpp -o temp_script_two `pkg-config --cflags --libs opencv4`	
+	g++ main.cpp -o main `pkg-config --cflags --libs opencv4`	
 
 5. run the executable
-	./<exe-file-name>
+	./main <args>
+
+Example usecase :
+
+	./temp_script_two 2 0 --transform 1 --tleft transform_mtx/left_trans_0.yml --tright transform_mtx/right_trans_0.yml --coordinates coordinates/try.yml 
+			      --leftm masks/left_blendmask_0.jpg --rightm masks/transformed_img_blendmask_0.jpg
 
 
 Note : left view is central view and right view is referenced and calibrated with respect to left view.
