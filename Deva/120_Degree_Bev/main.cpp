@@ -31,12 +31,15 @@ Mat rotateImage(const Mat& src, double angle, double scale, Mat center_rotate) {
 }
 
 Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int off_x2, int off_y2, int canvas_width, int canvas_height, 
-		Mat mask_left, Mat mask_center_0, int tstate) {
+		Mat mask_left, Mat mask_center_0, int tstate, Mat c_img) {
 	int w1 = img1.cols;
 	int h1 = img1.rows;
 	int w2 = img2.cols;
 	int h2 = img2.rows;
-	
+
+	int car_width  = c_img.cols;  
+	int car_height = c_img.rows;
+
 	// Calculate the canvas size to hold both images, considering the offsets
 	int c1 = canvas_width;  
 	int c2 = canvas_height;  
@@ -87,12 +90,24 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 		multiply(canvas2,mask_left,canvas2);
 		canvas2.convertTo(canvas2, CV_8U);	
 	}
-
+	
+	Mat roi_car;
+	roi_car = canvas4(Rect(c1/2-200,c2/2+100,car_width,car_height));
+	//imshow("car",canvas4);
+	//c_img.convertTo(c_img, CV_32F);
+	/*for(int i = 0; i < car_height; i++){
+		for(int j = 0; j < car_width; j++){
+			//printf("pixel val ",c_img[i][j]);
+			cout << "vals " << c_img.at<float>(j,i) << endl;
+		}
+	}*/
+	//add(canvas4,c_img,canvas4);
 	add(canvas1,canvas2,canvas4);
 	
+	c_img.copyTo(roi_car);
 
 	/* Crop portion */
-	int targetWidth  = 831;  // Change this to your desired width
+	/*int targetWidth  = 831;  // Change this to your desired width
 	int targetHeight = 337; // Change this to your desired height
 
 	// Define the cropping region (for example, starting from (100, 50) and cropping to (500, 350))
@@ -107,9 +122,9 @@ Mat blendImages(const Mat& img1, const Mat& img2, int off_x1, int off_y1, int of
 	// Crop the image (extract the region of interest)
 	Mat croppedImage = canvas4(cropRegion);
 
-	croppedImage.copyTo(canva);
+	croppedImage.copyTo(canva);*/
 	
-	return canva;
+	return canvas4;
 }
 
 int main(int argc, char **argv) {
@@ -123,6 +138,7 @@ int main(int argc, char **argv) {
 	string coordinates_path;
 	string left_mat, right_mat, right_homo;
 	int transform_state;
+	Mat car_img;
 
 	for(int i = 3; i < argc; i++){
 		if(string(argv[i]) == "--transform"){
@@ -149,7 +165,8 @@ int main(int argc, char **argv) {
 
 	VideoCapture cap1(atoi(argv[1]), cv::CAP_V4L2);
 	VideoCapture cap2(atoi(argv[2]), cv::CAP_V4L2);
-	
+
+	car_img = imread("/home/devashree/Downloads/car.jpeg");	
 	if (!cap1.isOpened() || !cap2.isOpened()) {
 		std::cout << "unable to open webcam" << std::endl;
 	}
@@ -378,10 +395,10 @@ int main(int argc, char **argv) {
 		}
 
 		output = blendImages(img1, img2, x1, y1, x2, y2, canvas_width, canvas_height,
-				normalized_image_left, normalized_image_center_0,transform_state);
+				normalized_image_left, normalized_image_center_0,transform_state,car_img);
 
 		imshow("canvas.jpg", output);
-		
+		//break;
 
 	}
 
